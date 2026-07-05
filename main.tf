@@ -27,6 +27,11 @@ resource "google_secret_manager_secret_version" "grafana_password_version" {
   secret_data = var.grafana_initial_password
 }
 
+resource "google_secret_manager_secret_version" "grafana_user_version" {
+  secret      = google_secret_manager_secret.grafana_user_secret.id
+  secret_data = var.grafana_admin_user
+}
+
 resource "google_service_account" "grafana_sa" {
   account_id   = "grafana-vm-sa"
   display_name = "Service Account for Grafana VM"
@@ -94,11 +99,10 @@ resource "google_compute_instance" "grafana_vm" {
     startup-script = <<-EOT
       #!/bin/bash
       
-      # התחברות לארטיפקט רגיסטרי האזורי
-      docker login -u oauth2access -p "$(gcloud auth print-access-token)" https://${var.art_region}-docker.pkg.dev
+      docker login -u oauth2access -p "\$(gcloud auth print-access-token --project=${var.project_id})" https://${var.art_region}-docker.pkg.dev      
       
-      GRAFANA_USER=$(gcloud secrets versions access latest --secret="grafana-admin-user")
-      GRAFANA_PASSWORD=$(gcloud secrets versions access latest --secret="grafana-admin-password")
+      GRAFANA_USER=\$(gcloud secrets versions access latest --secret="grafana-admin-user" --project=${var.project_id})
+      GRAFANA_PASSWORD=\$(gcloud secrets versions access latest --secret="grafana-admin-password" --project=${var.project_id})
       
       docker run -d -p 3000:3000 \
         -e "GF_SECURITY_ADMIN_USER=\$GRAFANA_USER" \
@@ -113,12 +117,13 @@ resource "google_compute_instance" "grafana_vm" {
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
 
-  # 🛑 המכונה תוקם רק אחרי שהבאקט, הלוגים, וכל הרשאות הגישה מוכנים לחלוטין
   depends_on = [
     google_storage_bucket.grafana_dashboards_bucket,
     google_storage_bucket_iam_member.bucket_reader,
     google_project_iam_member.ar_reader,
     google_project_iam_member.logging_reader,
+    google_secret_manager_secret_version.grafana_user_version,
+    google_secret_manager_secret_version.grafana_password_version,
     google_secret_manager_secret_iam_member.user_secret_accessor,
     google_secret_manager_secret_iam_member.password_secret_accessor
   ]
