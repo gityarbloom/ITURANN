@@ -3,15 +3,14 @@ variable "project_id" {
   default = "mafat-ai-gee-monitor-dev"
 }
 
-variable "secret_name" {
-  type    = string
-  default = "grafana-admin-password"
+variable "grafana_admin_user" {
+  type        = string
+  description = "The admin username for Grafana (will be saved in Secret Manager)"
 }
 
 variable "grafana_initial_password" {
   type        = string
-  description = "The initial admin password for Grafana"
-
+  description = "The admin password for Grafana (will be saved in Secret Manager)"
 }
 
 variable "region" {
@@ -39,7 +38,17 @@ variable "machine_type" {
   default = "e2-medium"
 }
 
-variable "tags" {
-  type    = list(string)
-  default = ["grafana-node"]
+variable "art_region" {
+  type    = string
+  default = "europe-west1"
+}
+
+variable "repository_name" {
+  type    = string
+  default = "early-warning--monitoring"
+}
+
+variable "image_name" {
+  type    = string
+  default = "grafana"
 }

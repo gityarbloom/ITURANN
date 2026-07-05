@@ -1,15 +1,22 @@
 resource "google_storage_bucket" "grafana_dashboards_bucket" {
-  name          = "${var.project_id}-grafana-dashboards"
-  project       = var.project_id
-  location      = var.region
-  force_destroy = false 
-
+  name                        = "${var.project_id}-grafana-dashboards"
+  project                     = var.project_id
+  location                    = var.region
+  force_destroy               = false 
   uniform_bucket_level_access = true
 }
 
+resource "google_secret_manager_secret" "grafana_user_secret" {
+  secret_id = "grafana-admin-user"
+
+  replication {
+    auto {}
+  }
+}
+
 resource "google_secret_manager_secret" "grafana_password_secret" {
-  provider  = google
-  secret_id = var.secret_name
+  secret_id = "grafana-admin-password"
+
   replication {
     auto {}
   }
@@ -25,10 +32,22 @@ resource "google_service_account" "grafana_sa" {
   display_name = "Service Account for Grafana VM"
 }
 
-resource "google_secret_manager_secret_iam_member" "secret_accessor" {
+resource "google_secret_manager_secret_iam_member" "user_secret_accessor" {
+  secret_id = google_secret_manager_secret.grafana_user_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.grafana_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "password_secret_accessor" {
   secret_id = google_secret_manager_secret.grafana_password_secret.id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.grafana_sa.email}"
+}
+
+resource "google_storage_bucket_iam_member" "bucket_reader" {
+  bucket = google_storage_bucket.grafana_dashboards_bucket.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.grafana_sa.email}"
 }
 
 resource "google_project_iam_member" "ar_reader" {
@@ -41,12 +60,6 @@ resource "google_project_iam_member" "logging_reader" {
   project = var.project_id
   role    = "roles/logging.viewer" 
   member  = "serviceAccount:${google_service_account.grafana_sa.email}"
-}
-
-resource "google_storage_bucket_iam_member" "bucket_reader" {
-  bucket = google_storage_bucket.grafana_dashboards_bucket.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${google_service_account.grafana_sa.email}"
 }
 
 resource "google_compute_firewall" "allow_grafana" {
@@ -74,22 +87,24 @@ resource "google_compute_instance" "grafana_vm" {
 
   network_interface {
     network = var.network
-    access_config {}
+    access_config {} 
   }
 
   metadata = {
     startup-script = <<-EOT
       #!/bin/bash
       
-      mkdir -p /var/lib/grafana/dashboards
-      chmod 777 /var/lib/grafana/dashboards
-      gsutil -m cp -r gs://${google_storage_bucket.grafana_dashboards_bucket.name}/*.json /var/lib/grafana/dashboards/ || true
-      docker login -u oauth2access -p "$(gcloud auth print-access-token)" https://${var.region}-docker.pkg.dev
-      GRAFANA_PASSWORD=$(gcloud secrets versions access latest --secret="${var.secret_name}")
+      # התחברות לארטיפקט רגיסטרי האזורי
+      docker login -u oauth2access -p "$(gcloud auth print-access-token)" https://${var.art_region}-docker.pkg.dev
+      
+      GRAFANA_USER=$(gcloud secrets versions access latest --secret="grafana-admin-user")
+      GRAFANA_PASSWORD=$(gcloud secrets versions access latest --secret="grafana-admin-password")
+      
       docker run -d -p 3000:3000 \
-        -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD" \
-        -v /var/lib/grafana/dashboards:/var/lib/grafana/dashboards \
-        ${var.region}-docker.pkg.dev/${var.project_id}/[REPOSITORY_NAME]/[IMAGE_NAME]:latest
+        -e "GF_SECURITY_ADMIN_USER=\$GRAFANA_USER" \
+        -e "GF_SECURITY_ADMIN_PASSWORD=\$GRAFANA_PASSWORD" \
+        -e "GRAFANA_DASHBOARDS_BUCKET=${google_storage_bucket.grafana_dashboards_bucket.name}" \
+        ${var.art_region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
     EOT
   }
 
@@ -98,8 +113,13 @@ resource "google_compute_instance" "grafana_vm" {
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
 
+  # 🛑 המכונה תוקם רק אחרי שהבאקט, הלוגים, וכל הרשאות הגישה מוכנים לחלוטין
   depends_on = [
     google_storage_bucket.grafana_dashboards_bucket,
-    google_storage_bucket_iam_member.bucket_reader
+    google_storage_bucket_iam_member.bucket_reader,
+    google_project_iam_member.ar_reader,
+    google_project_iam_member.logging_reader,
+    google_secret_manager_secret_iam_member.user_secret_accessor,
+    google_secret_manager_secret_iam_member.password_secret_accessor
   ]
 }
