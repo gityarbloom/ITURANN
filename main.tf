@@ -74,7 +74,7 @@ resource "google_compute_firewall" "allow_grafana" {
     protocol = "tcp"
     ports    = ["3000"]
   }
-  source_ranges = var.source_ranges
+  source_ranges = concat(var.source_ranges, ["35.235.240.0/20"])
   target_tags   = ["grafana-node"]
 }
 
