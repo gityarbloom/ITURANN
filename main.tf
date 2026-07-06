@@ -2,7 +2,7 @@ resource "google_storage_bucket" "grafana_dashboards_bucket" {
   name                        = "${var.project_id}-grafana-dashboards"
   project                     = var.project_id
   location                    = var.region
-  force_destroy               = false 
+  force_destroy               = false
   uniform_bucket_level_access = true
 }
 
@@ -96,22 +96,22 @@ resource "google_compute_instance" "grafana_vm" {
   }
 
   metadata = {
-    startup-script = <<-EOT
+    startup-script = replace(<<-EOT
       #!/bin/bash
+      TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | grep -oE '"access_token":"[^"]+"' | cut -d'"' -f4)
+      docker login -u oauth2access -p "$TOKEN" https://${var.art_region}-docker.pkg.dev      
       
-      docker login -u oauth2access -p "\$(gcloud auth print-access-token --project=${var.project_id})" https://${var.art_region}-docker.pkg.dev      
+      GRAFANA_USER=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-user/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
+      GRAFANA_PASSWORD=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
       
-      GRAFANA_USER=\$(gcloud secrets versions access latest --secret="grafana-admin-user" --project=${var.project_id})
-      GRAFANA_PASSWORD=\$(gcloud secrets versions access latest --secret="grafana-admin-password" --project=${var.project_id})
-      
-      docker run -d -p 3000:3000 \
-        -e "GF_SECURITY_ADMIN_USER=\$GRAFANA_USER" \
-        -e "GF_SECURITY_ADMIN_PASSWORD=\$GRAFANA_PASSWORD" \
+      docker run -d -p 3000:3000 --name grafana-app --restart always \
+        -e "GF_SECURITY_ADMIN_USER=$GRAFANA_USER" \
+        -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD" \
         -e "GRAFANA_DASHBOARDS_BUCKET=${google_storage_bucket.grafana_dashboards_bucket.name}" \
         ${var.art_region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
     EOT
+    , "\r", "")
   }
-
   service_account {
     email  = google_service_account.grafana_sa.email
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
