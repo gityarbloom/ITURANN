@@ -92,7 +92,7 @@ resource "google_compute_instance" "grafana_vm" {
 
   network_interface {
     network = var.network
-    access_config {} 
+    # access_config {} 
   }
 
   metadata = {
