@@ -99,7 +99,7 @@ resource "google_compute_instance" "grafana_vm" {
     startup-script = replace(<<-EOT
       #!/bin/bash
       TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | grep -oE '"access_token":"[^"]+"' | cut -d'"' -f4)
-      docker login -u oauth2access -p "$TOKEN" https://${var.art_region}-docker.pkg.dev      
+      docker login -u oauth2access -p "$TOKEN" https://${var.region}-docker.pkg.dev      
       
       GRAFANA_USER=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-user/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
       GRAFANA_PASSWORD=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
@@ -108,7 +108,7 @@ resource "google_compute_instance" "grafana_vm" {
         -e "GF_SECURITY_ADMIN_USER=$GRAFANA_USER" \
         -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD" \
         -e "GRAFANA_DASHBOARDS_BUCKET=${google_storage_bucket.grafana_dashboards_bucket.name}" \
-        ${var.art_region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
+        ${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
     EOT
     , "\r", "")
   }

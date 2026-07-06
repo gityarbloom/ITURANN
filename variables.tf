@@ -15,12 +15,12 @@ variable "grafana_initial_password" {
 
 variable "region" {
   type    = string
-  default = "me-west1"
+  default = "europe-west1"
 }
 
 variable "zone" {
   type    = string
-  default = "me-west1-a"
+  default = "europe-west1-a"
 }
 
 variable "network" {
@@ -36,11 +36,6 @@ variable "source_ranges" {
 variable "machine_type" {
   type    = string
   default = "e2-medium"
-}
-
-variable "art_region" {
-  type    = string
-  default = "europe-west1"
 }
 
 variable "repository_name" {
