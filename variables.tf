@@ -15,12 +15,12 @@ variable "grafana_initial_password" {
 
 variable "region" {
   type    = string
-  default = "europe-west1"
+  default = "me-west1"
 }
 
 variable "zone" {
   type    = string
-  default = "europe-west1-a"
+  default = "me-west1-a"
 }
 
 variable "network" {
