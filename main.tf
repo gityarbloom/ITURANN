@@ -141,11 +141,20 @@ resource "google_compute_instance" "grafana_vm" {
       GRAFANA_PASSWORD_BASE64=$(curl -s -f -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | python3 -c "import sys, json; print(json.load(sys.stdin)['payload']['data'])")
       GRAFANA_PASSWORD=$(echo "$GRAFANA_PASSWORD_BASE64" | base64 -d)
 
-      # 3. הרצת הקונטיינר עם הפניה לתיקיית הקונפיגורציה
+      # =========================================================
+      # 3. Mount production dashboards from GCS sync path
+      # =========================================================
+      echo "=== [STARTUP] Creating local dashboards cache directory... ==="
+      mkdir -p /var/lib/docker/dashboards
+      chmod 777 /var/lib/docker/dashboards
+
+      echo "=== [STARTUP] Starting Grafana container with synced dashboards volume... ==="
       docker --config /var/lib/docker run -d -p 3000:3000 --name grafana-app --restart always \
         -e "GF_SECURITY_ADMIN_USER=$GRAFANA_USER" \
         -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD" \
         -e "GRAFANA_DASHBOARDS_BUCKET=${google_storage_bucket.grafana_dashboards_bucket.name}" \
+        -e "GRAFANA_DASHBOARDS_PATH=/var/lib/grafana/dashboards" \
+        -v /var/lib/docker/dashboards:/var/lib/grafana/dashboards \
         ${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
 
       echo "=== [STARTUP] Grafana setup completed successfully ==="
