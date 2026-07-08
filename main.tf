@@ -98,17 +98,58 @@ resource "google_compute_instance" "grafana_vm" {
   metadata = {
     startup-script = replace(<<-EOT
       #!/bin/bash
-      TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | grep -oE '"access_token":"[^"]+"' | cut -d'"' -f4)
-      docker login -u oauth2access -p "$TOKEN" https://${var.region}-docker.pkg.dev      
-      
-      GRAFANA_USER=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-user/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
-      GRAFANA_PASSWORD=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
-      
+
+      # ---------------------------------------------------------
+      # 0. פתרון לבעיית ה-Race Condition באתחול:
+      # המתנה עד שהרשת והשעון מסונכרנים במלואם מול שרתי גוגל
+      # ---------------------------------------------------------
+      echo "=== [STARTUP] Starting Grafana VM Setup ==="
+      echo "Waiting for network and metadata server to be fully ready..."
+
+      until curl -s -I -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance" | grep -q "200 OK"; do
+        echo "Metadata server not ready yet. Sleeping 3 seconds..."
+        sleep 3
+      done
+
+      echo "System is ready. Proceeding with setup..."
+
+      # ---------------------------------------------------------
+      # 1. פתרון בעיית ה-Read-Only ב-COS:
+      # הגדרת תיקיית הבית לתיקייה פתוחה לכתיבה כדי שדוקר יוכל לשמור קונפיגורציה
+      # ---------------------------------------------------------
+      export HOME=/tmp
+
+      echo "Configuring Docker credential helper..."
+      docker-credential-gcr configure-docker --registries=${var.region}-docker.pkg.dev
+
+      # 2. שליפת הטוקן בצורה אמינה בעזרת Python
+      echo "Fetching Google Metadata token..."
+      TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | python3 -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
+
+      if [ -z "$TOKEN" ]; then
+        echo "ERROR: Failed to retrieve token from metadata server." >&2
+        exit 1
+      fi
+
+      set -e
+
+      # 3. שליפת הסודות מ-Secret Manager בעזרת Python
+      echo "Fetching Grafana credentials from Secret Manager..."
+      GRAFANA_USER_BASE64=$(curl -s -f -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-user/versions/latest:access" | python3 -c "import sys, json; print(json.load(sys.stdin)['payload']['data'])")
+      GRAFANA_USER=$(echo "$GRAFANA_USER_BASE64" | base64 -d)
+
+      GRAFANA_PASSWORD_BASE64=$(curl -s -f -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | python3 -c "import sys, json; print(json.load(sys.stdin)['payload']['data'])")
+      GRAFANA_PASSWORD=$(echo "$GRAFANA_PASSWORD_BASE64" | base64 -d)
+
+      # 4. הרצת הקונטיינר
+      echo "Starting Grafana container..."
       docker run -d -p 3000:3000 --name grafana-app --restart always \
         -e "GF_SECURITY_ADMIN_USER=$GRAFANA_USER" \
         -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD" \
         -e "GRAFANA_DASHBOARDS_BUCKET=${google_storage_bucket.grafana_dashboards_bucket.name}" \
         ${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
+
+      echo "=== [STARTUP] Grafana setup completed successfully ==="
     EOT
     , "\r", "")
   }
