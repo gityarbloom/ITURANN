@@ -1,0 +1,772 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "SAR Pipeline - Batch Drilldown",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 14,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "FAILED": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Failed"
+                },
+                "PARTIAL": {
+                  "color": "orange",
+                  "index": 4,
+                  "text": "Partial"
+                },
+                "PENDING": {
+                  "color": "blue",
+                  "index": 2,
+                  "text": "Pending"
+                },
+                "PROCESSING": {
+                  "color": "yellow",
+                  "index": 3,
+                  "text": "Processing"
+                },
+                "SUCCESS": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Success"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Partial"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Processing"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^jsonPayload\\.manifest_data\\.pair_id \\(count\\)$/",
+          "values": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "datasource": {
+            "type": "googlecloud-logging-datasource",
+            "uid": "google-cloud-logging"
+          },
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"PairManifest\" AND \njsonPayload.manifest_data.created_by_batch_id=\"${batch_id}\"\n\n",
+          "refId": "A",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Pairs status",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "jsonPayload.manifest_data.created_by_batch_id": {
+                "aggregations": []
+              },
+              "jsonPayload.manifest_data.global_status": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "jsonPayload.manifest_data.pair_id": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "FAILED": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Failed"
+                },
+                "PARTIAL": {
+                  "color": "orange",
+                  "index": 4,
+                  "text": "Partial"
+                },
+                "PENDING": {
+                  "color": "blue",
+                  "index": 2,
+                  "text": "Pending"
+                },
+                "PROCESSING": {
+                  "color": "yellow",
+                  "index": 3,
+                  "text": "Processing"
+                },
+                "SUCCESS": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Success"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Success"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Processing"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^jsonPayload\\.manifest_data\\.full_name \\(count\\)$/",
+          "values": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"ProductManifest\"\njsonPayload.manifest_data.created_by_batch_id=\"${batch_id}\"",
+          "refId": "A",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Product status",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "jsonPayload.manifest_data.created_by_batch_id": "",
+              "jsonPayload.manifest_data.full_name (count)": "Product name (id)",
+              "jsonPayload.manifest_data.global_status": ""
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "jsonPayload.manifest_data.created_by_batch_id": {
+                "aggregations": []
+              },
+              "jsonPayload.manifest_data.full_name": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.global_status": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        }
+      ],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": false
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Global status"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "FAILED": {
+                        "color": "red",
+                        "index": 2
+                      },
+                      "PARTIAL": {
+                        "color": "orange",
+                        "index": 3
+                      },
+                      "PENDING": {
+                        "color": "blue",
+                        "index": 4
+                      },
+                      "PROCESSING": {
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "SUCCESS": {
+                        "color": "green",
+                        "index": 0
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text",
+                  "wrapText": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"PairManifest\" AND \njsonPayload.manifest_data.created_by_batch_id=\"${batch_id}\"\n\n",
+          "refId": "A",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Pairs table",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "byVariable": false,
+            "include": {
+              "names": [
+                "id",
+                "jsonPayload.manifest_data.created_by_batch_id",
+                "jsonPayload.manifest_data.global_status"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "id": "Pair id",
+              "jsonPayload.manifest_data.created_by_batch_id": "Batch id",
+              "jsonPayload.manifest_data.global_status": "Global status"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Global status"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "FAILED": {
+                        "color": "red",
+                        "index": 2
+                      },
+                      "PARTIAL": {
+                        "color": "orange",
+                        "index": 3
+                      },
+                      "PENDING": {
+                        "color": "blue",
+                        "index": 4
+                      },
+                      "PROCESSING": {
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "SUCCESS": {
+                        "color": "green",
+                        "index": 0
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "lastNotNull"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "jsonPayload.manifest.created_by_pair_id"
+          }
+        ]
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"ProductManifest\"\njsonPayload.manifest_data.created_by_batch_id=\"${batch_id}\"",
+          "refId": "A",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Product table",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "id",
+                "jsonPayload.manifest_data.created_by_pair_id",
+                "jsonPayload.manifest_data.global_status"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "id": "Product id",
+              "jsonPayload.manifest_data.created_by_pair_id": "Pair id",
+              "jsonPayload.manifest_data.global_status": "Global status"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "TEST-BATCH-20260712144300",
+          "value": "TEST-BATCH-20260712144300"
+        },
+        "description": "batch_id",
+        "label": "batch_id",
+        "name": "batch_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "TEST-BATCH-20260712144300",
+            "value": "TEST-BATCH-20260712144300"
+          }
+        ],
+        "query": "TEST-BATCH-20260712144300",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "SAR Pipeline - Batch Drilldown",
+  "uid": "88ca92ba-70f8-4165-9ef3-54e07a3aafae",
+  "version": 35
+}

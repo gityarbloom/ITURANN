@@ -1,0 +1,241 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "SAR Pipeline - Batches Overview",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 10,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "jsonPayload.manifest_data.batch_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Secondary dashboard",
+                    "url": "http://localhost:3000/d/88ca92ba-70f8-4165-9ef3-54e07a3aafae/new-dashboard?var-batch_id=${__value.text}&from=now-30d&to=now&orgId=1&timezone=browser"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "datasource": {
+            "type": "googlecloud-logging-datasource",
+            "uid": "google-cloud-logging"
+          },
+          "hide": false,
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"BatchManifest\"",
+          "refId": "B",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Batch ids",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "byVariable": false,
+            "include": {
+              "names": [
+                "time",
+                "jsonPayload.manifest_data.batch_id",
+                "jsonPayload.manifest_data.global_status",
+                "jsonPayload.manifest_data.discovery.started_at"
+              ],
+              "pattern": "^(time|jsonPayload\\.manifest_data\\.batch_id|jsonPayload\\.manifest_data\\.global_status)$"
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Batch id": {
+                "aggregations": []
+              },
+              "batch id": {
+                "aggregations": []
+              },
+              "global status": {
+                "aggregations": [
+                  "last"
+                ]
+              },
+              "jsonPayload.manifest.batch_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "jsonPayload.manifest_data.batch_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "jsonPayload.manifest_data.discovery.started_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.global_status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "last update": {
+                "aggregations": [
+                  "last"
+                ]
+              },
+              "lest update": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "time": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "jsonPayload.manifest_data.global_status": false,
+              "time": false
+            },
+            "includeByName": {},
+            "indexByName": {
+              "jsonPayload.manifest_data.batch_id": 0,
+              "jsonPayload.manifest_data.discovery.started_at (last)": 1,
+              "jsonPayload.manifest_data.global_status (last)": 3,
+              "time (last)": 2
+            },
+            "renameByName": {
+              "jsonPayload.manifest_data.batch_id": "Batch id",
+              "jsonPayload.manifest_data.discovery.started_at": "Start time",
+              "jsonPayload.manifest_data.discovery.started_at (last)": "Start time",
+              "jsonPayload.manifest_data.global_status": "global status",
+              "jsonPayload.manifest_data.global_status (last)": "Global status",
+              "time": "last update",
+              "time (last)": "Last update"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "SAR Pipeline - Batches Overview",
+  "uid": "3c277c44-3b84-4091-bde3-b58fe0e5ca5b",
+  "version": 63
+}
