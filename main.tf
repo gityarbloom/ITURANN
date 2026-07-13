@@ -78,6 +78,19 @@ resource "google_compute_firewall" "allow_grafana" {
   target_tags   = ["grafana-node"]
 }
 
+# מאפשר גישת SSH ל-VM ללא IP חיצוני, דרך IAP (Identity-Aware Proxy) בלבד.
+# נדרש לצורך דיבוג/תחזוקה של ה-VM כאשר אין לו External IP.
+resource "google_compute_firewall" "allow_iap_ssh" {
+  name    = "allow-iap-ssh"
+  network = var.network
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  source_ranges = ["35.235.240.0/20"]
+  target_tags   = ["grafana-node"]
+}
+
 resource "google_compute_instance" "grafana_vm" {
   name         = "grafana-pipeline-dashboard"
   machine_type = var.machine_type
@@ -98,17 +111,53 @@ resource "google_compute_instance" "grafana_vm" {
   metadata = {
     startup-script = replace(<<-EOT
       #!/bin/bash
-      TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | grep -oE '"access_token":"[^"]+"' | cut -d'"' -f4)
-      docker login -u oauth2access -p "$TOKEN" https://${var.region}-docker.pkg.dev      
-      
-      GRAFANA_USER=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-user/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
-      GRAFANA_PASSWORD=$(curl -s -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | grep -oE '"data":"[^"]+"' | cut -d'"' -f4 | base64 -d)
-      
-      docker run -d -p 3000:3000 --name grafana-app --restart always \
+
+      echo "=== [STARTUP] Waiting for Network and Metadata Server... ==="
+      # חסימת הריצה עד שהרשת תתייצב ושרת המטא-דאטה יענה (פותר את ה-Race Condition באתחול)
+      until curl -s -I -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance" | grep -q "200 OK"; do
+        sleep 3
+      done
+      echo "=== [STARTUP] Network is ready! Starting Grafana VM Setup ==="
+
+      # 1. יצירת הקובץ בתיקיית tmp זמנית והעברתו לתיקיית דוקר המובנית של COS
+      HOME=/tmp docker-credential-gcr configure-docker --registries=${var.region}-docker.pkg.dev
+      mkdir -p /var/lib/docker
+      cp /tmp/.docker/config.json /var/lib/docker/config.json
+
+      # 2. שליפת הטוקן והסודות בעזרת Python
+      TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | python3 -c "import sys, json; print(json.load(sys.stdin)['access_token'])")
+
+      if [ -z "$TOKEN" ]; then
+        echo "ERROR: Failed to retrieve token from metadata server." >&2
+        exit 1
+      fi
+
+      # עצירת הסקריפט במקרה של שגיאה בהמשך
+      set -e
+
+      GRAFANA_USER_BASE64=$(curl -s -f -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-user/versions/latest:access" | python3 -c "import sys, json; print(json.load(sys.stdin)['payload']['data'])")
+      GRAFANA_USER=$(echo "$GRAFANA_USER_BASE64" | base64 -d)
+
+      GRAFANA_PASSWORD_BASE64=$(curl -s -f -H "Authorization: Bearer $TOKEN" "https://secretmanager.googleapis.com/v1/projects/${var.project_id}/secrets/grafana-admin-password/versions/latest:access" | python3 -c "import sys, json; print(json.load(sys.stdin)['payload']['data'])")
+      GRAFANA_PASSWORD=$(echo "$GRAFANA_PASSWORD_BASE64" | base64 -d)
+
+      # =========================================================
+      # 3. Mount production dashboards from GCS sync path
+      # =========================================================
+      echo "=== [STARTUP] Creating local dashboards cache directory... ==="
+      mkdir -p /var/lib/docker/dashboards
+      chmod 777 /var/lib/docker/dashboards
+
+      echo "=== [STARTUP] Starting Grafana container with synced dashboards volume... ==="
+      docker --config /var/lib/docker run -d -p 3000:3000 --name grafana-app --restart always \
         -e "GF_SECURITY_ADMIN_USER=$GRAFANA_USER" \
         -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_PASSWORD" \
         -e "GRAFANA_DASHBOARDS_BUCKET=${google_storage_bucket.grafana_dashboards_bucket.name}" \
+        -e "GRAFANA_DASHBOARDS_PATH=/var/lib/grafana/dashboards" \
+        -v /var/lib/docker/dashboards:/var/lib/grafana/dashboards \
         ${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_name}/${var.image_name}:1.0.0-dev
+
+      echo "=== [STARTUP] Grafana setup completed successfully ==="
     EOT
     , "\r", "")
   }
