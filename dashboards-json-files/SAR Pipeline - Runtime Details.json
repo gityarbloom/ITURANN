@@ -160,7 +160,6 @@
             "keepLabels": [
               "jsonPayload.manifest_data.gee_processing.started_at",
               "jsonPayload.manifest_data.pair_id",
-              "jsonPayload.manifest_data.start_time",
               "jsonPayload.manifest_data.gee_processing.ended_at",
               "jsonPayload.manifest_data.end_time",
               "jsonPayload.manifest_data.global_status"
@@ -177,7 +176,7 @@
             "fields": {},
             "sort": [
               {
-                "field": "jsonPayload.manifest_data.start_time"
+                "field": "jsonPayload.manifest_data.end_time"
               }
             ]
           }
@@ -869,5 +868,5 @@
   "timezone": "browser",
   "title": "SAR Pipeline - Runtime Details",
   "uid": "171733c2-c219-445d-8baa-260e84dec5bf",
-  "version": 3
+  "version": 4
 }
