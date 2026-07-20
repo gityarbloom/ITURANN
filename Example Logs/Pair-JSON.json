@@ -1,0 +1,47 @@
+{
+  "insertId": "6a451b5f0000666ec77f6310",
+  "jsonPayload": {
+    "manifest_data": {
+      "reference_product_status": "SUCCESS",
+      "primary_product_status": "SUCCESS",
+      "created_by_batch_id": "BATCH-20260624143722",
+      "gee_processing": {
+        "last_error": null,
+        "uri": "gs://early-warning--dev-dev-dev/export-v1.1.6/2026-06-22:15.48.12--2026-06-24:02.50.43/csde--algo/S1A_20260623T144022_S1A_20260611T144022",
+        "status": "SUCCESS",
+        "ended_at": "2026-07-01T16:51:26.856644+03:00",
+        "attempt_number": 1,
+        "started_at": "2026-07-01T15:40:31.313305+03:00"
+      },
+      "global_status": "SUCCESS",
+      "updated_at": "2026-07-01T16:51:26.856653+03:00",
+      "reference_product_base_name": "S1A_IW_GRDH_1SDV_20260611T144022_20260611T144047_064923_082E77",
+      "pair_id": "S1A_20260623T144022_S1A_20260611T144022",
+      "workflow_execution_id": null,
+      "primary_product_base_name": "S1A_IW_GRDH_1SDV_20260623T144022_20260623T144047_065098_08349D",
+      "start_time": "2026-06-24T14:43:11.806415+03:00",
+      "end_time": "2026-07-01T16:51:26.856669+03:00"
+    },
+    "message": "Manifest updated: manifests/pairs/S1A_20260623T144022_S1A_20260611T144022.json",
+    "manifest_type": "PairManifest",
+    "logger_name": "ManifestLogger",
+    "file_path": "manifests/pairs/S1A_20260623T144022_S1A_20260611T144022.json"
+  },
+  "resource": {
+    "type": "cloud_run_revision",
+    "labels": {
+      "location": "europe-west1",
+      "configuration_name": "sar-state-api-svc-dev",
+      "project_id": "mafat-ai-gee-monitor-dev",
+      "revision_name": "sar-state-api-svc-dev-00029-wt5",
+      "service_name": "sar-state-api-svc-dev"
+    }
+  },
+  "timestamp": "2026-07-01T13:51:27.026222Z",
+  "severity": "DEBUG",
+  "labels": {
+    "instanceId": "002f8ffd474e0fea3cdaa57687d423c1a3a0cc7403f0d60919dc809224920a58fca57dc131aa443e2a387e43cd293f9b9231e5a777df34e83c46c3a24b8a8dd4dd42e9bd8cff27bef7ef0e30e10a3ab06484ebd6756d8c320c2ed2"
+  },
+  "logName": "projects/mafat-ai-gee-monitor-dev/logs/run.googleapis.com%2Fstdout",
+  "receiveTimestamp": "2026-07-01T13:51:27.029721427Z"
+}

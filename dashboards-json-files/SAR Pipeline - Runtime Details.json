@@ -1,0 +1,873 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Display of all the runtime details",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 15,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "color-text",
+              "wrapText": false
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [
+            {
+              "options": {
+                "FAILED": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "FAILED"
+                },
+                "SUCCESS": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "SUCCESS"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "#EAB839",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GEE process time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "All Pair-process time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pair ID"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 400
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#5794F2",
+                  "mode": "shades"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "md",
+        "footer": {
+          "countRows": true,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "count"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"PairManifest\"\n-jsonPayload.manifest_data.end_time=null",
+          "refId": "A",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Pairs Processes Runtime",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "jsonPayload.manifest_data.gee_processing.started_at",
+              "jsonPayload.manifest_data.pair_id",
+              "jsonPayload.manifest_data.start_time",
+              "jsonPayload.manifest_data.gee_processing.ended_at",
+              "jsonPayload.manifest_data.end_time",
+              "jsonPayload.manifest_data.global_status"
+            ]
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "jsonPayload.manifest_data.start_time"
+              }
+            ]
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.end_time"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.gee_processing.ended_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.gee_processing.started_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.start_time"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "jsonPayload.manifest_data.end_time": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.gee_processing.ended_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.gee_processing.started_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.global_status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.pair_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "jsonPayload.manifest_data.start_time": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "GEE process time",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.gee_processing.ended_at (last)"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.gee_processing.started_at (last)"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "include": [
+                "GEE Start Time",
+                "GEE End Time"
+              ],
+              "reducer": "allValues"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "All Pair-process time",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.end_time (last)"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.start_time (last)"
+                }
+              }
+            },
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "GEE process time"
+              ],
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "byVariable": false,
+            "include": {
+              "names": [
+                "jsonPayload.manifest_data.pair_id",
+                "GEE process time",
+                "All Pair-process time",
+                "jsonPayload.manifest_data.global_status (last)"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "All Pair-process time": 2,
+              "GEE process time": 1,
+              "jsonPayload.manifest_data.global_status (last)": 3,
+              "jsonPayload.manifest_data.pair_id": 0
+            },
+            "renameByName": {
+              "jsonPayload.manifest_data.end_time (last)": "End Time (all the pair process)",
+              "jsonPayload.manifest_data.gee_processing.ended_at (last)": "GEE End Time",
+              "jsonPayload.manifest_data.gee_processing.started_at (last)": "GEE Start Time",
+              "jsonPayload.manifest_data.global_status (last)": "Global Status",
+              "jsonPayload.manifest_data.pair_id": "Pair ID",
+              "jsonPayload.manifest_data.start_time (last)": "Start Time (all the pair process)"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "googlecloud-logging-datasource",
+        "uid": "google-cloud-logging"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "color-text"
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "#EAB839",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Metadata Unit-16"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Row Download"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Snap Process"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unit-16 Conversion"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "All-Processes Time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Product ID"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 500
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "shades"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "md",
+        "footer": {
+          "countRows": true,
+          "fields": "",
+          "reducer": [
+            "count"
+          ],
+          "show": true
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "bucketId": "me-west1/buckets/_Default",
+          "projectId": "mafat-ai-gee-monitor-dev",
+          "queryText": "jsonPayload.manifest_type=\"ProductManifest\"\n-jsonPayload.manifest_data.end_time=null",
+          "refId": "A",
+          "viewId": "_Default"
+        }
+      ],
+      "title": "Product processes Runtime",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "jsonPayload.manifest_data.end_time",
+              "jsonPayload.manifest_data.metadata_uint16.ended_at",
+              "jsonPayload.manifest_data.metadata_uint16.started_at",
+              "jsonPayload.manifest_data.raw_download.ended_at",
+              "jsonPayload.manifest_data.raw_download.started_at",
+              "jsonPayload.manifest_data.snap_processing.ended_at",
+              "jsonPayload.manifest_data.snap_processing.started_at",
+              "jsonPayload.manifest_data.start_time",
+              "jsonPayload.manifest_data.uint16_conversion.ended_at",
+              "jsonPayload.manifest_data.uint16_conversion.started_at",
+              "jsonPayload.manifest_data.base_name"
+            ]
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": false,
+                "field": "jsonPayload.manifest_data.end_time"
+              }
+            ]
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.end_time"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.metadata_uint16.ended_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.metadata_uint16.started_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.raw_download.ended_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.raw_download.started_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.snap_processing.ended_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.snap_processing.started_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.start_time"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.uint16_conversion.ended_at"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "jsonPayload.manifest_data.uint16_conversion.started_at"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "jsonPayload.manifest_data.base_name": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "jsonPayload.manifest_data.end_time": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.global_status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.metadata_uint16.ended_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.metadata_uint16.started_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.metadata_uint16.status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.raw_download.ended_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.raw_download.started_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.raw_download.status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.snap_processing.ended_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.snap_processing.started_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.snap_processing.status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.start_time": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.uint16_conversion.ended_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.uint16_conversion.last_error": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.uint16_conversion.started_at": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.uint16_conversion.status": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "jsonPayload.manifest_data.workflow_execution_id": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Metadata Unit-16",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.metadata_uint16.ended_at (last)"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.metadata_uint16.started_at (last)"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Row Download",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.raw_download.ended_at (last)"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.raw_download.started_at (last)"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Snap Process",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.snap_processing.ended_at (last)"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.snap_processing.started_at (last)"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Unit-16 Conversion",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.uint16_conversion.ended_at (last)"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "jsonPayload.manifest_data.uint16_conversion.started_at (last)"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "All-Processes Time",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "Metadata Unit-16",
+                "Row Download",
+                "Snap Process",
+                "Unit-16 Conversion"
+              ],
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "Metadata Unit-16",
+                "Row Download",
+                "Snap Process",
+                "Unit-16 Conversion",
+                "All-Processes Time",
+                "jsonPayload.manifest_data.base_name"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "Conversion Runtime": 4,
+              "Global Product Runtime": 5,
+              "Row Download Runtime": 2,
+              "Snap Process Runtime": 3,
+              "Unit-16 Runtime": 1,
+              "id": 0
+            },
+            "renameByName": {
+              "id": "Product ID",
+              "jsonPayload.manifest_data.base_name": "Product ID"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "SAR Pipeline - Runtime Details",
+  "uid": "171733c2-c219-445d-8baa-260e84dec5bf",
+  "version": 3
+}

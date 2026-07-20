@@ -1,0 +1,70 @@
+{
+  "insertId": "6a58a0cf00034a39576c3f55",
+  "jsonPayload": {
+    "file_path": "manifests/products/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE.json",
+    "manifest_type": "ProductManifest",
+    "manifest_data": {
+      "raw_download": {
+        "started_at": "2026-07-12T13:09:17.041022+03:00",
+        "last_error": null,
+        "ended_at": "2026-07-12T13:09:53.595541+03:00",
+        "attempt_number": 2,
+        "uri": "gs://early-warning---test/csde--raw/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE/SAFE/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE_44EE.SAFE/",
+        "status": "SUCCESS"
+      },
+      "created_by_pair_id": "S1C_20260710T154734_S1C_20260628T154734",
+      "base_name": "S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE",
+      "full_name": "S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE_44EE",
+      "metadata_uint16": {
+        "ended_at": "2026-07-16T12:13:40.651837+03:00",
+        "last_error": null,
+        "started_at": "2026-07-16T12:13:40.122049+03:00",
+        "uri": "gs://early-warning---test/export-v1.2.6/BATCH-20260712130722/csde--uint16/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE",
+        "status": "SUCCESS",
+        "attempt_number": 1
+      },
+      "start_time": "2026-07-12T12:16:38.775904+03:00",
+      "created_by_batch_id": "BATCH-20260712121541",
+      "global_status": "SUCCESS",
+      "prior_full_name": null,
+      "workflow_execution_id": null,
+      "uint16_conversion": {
+        "status": "SUCCESS",
+        "uri": "gs://early-warning---test/export-v1.2.6/BATCH-20260712130722/csde--uint16/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE/",
+        "attempt_number": 1,
+        "ended_at": "2026-07-12T14:02:23.209925+03:00",
+        "last_error": null,
+        "started_at": "2026-07-12T13:59:41.276263+03:00"
+      },
+      "snap_processing": {
+        "last_error": null,
+        "started_at": "2026-07-12T13:11:43.676552+03:00",
+        "ended_at": "2026-07-12T13:58:58.936942+03:00",
+        "attempt_number": 1,
+        "uri": "gs://early-warning---test/csde--snap/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE/",
+        "status": "SUCCESS"
+      },
+      "updated_at": "2026-07-16T12:13:40.651848+03:00",
+      "end_time": "2026-07-16T12:13:40.651870+03:00"
+    },
+    "logger_name": "ManifestLogger",
+    "message": "Manifest updated: manifests/products/S1C_IW_GRDH_1SDV_20260628T154734_20260628T154759_008308_0106FE.json"
+  },
+  "resource": {
+    "type": "cloud_run_revision",
+    "labels": {
+      "configuration_name": "sar-state-api-svc-test",
+      "revision_name": "sar-state-api-svc-test-00030-gdv",
+      "location": "europe-west1",
+      "project_id": "mafat-ai-gee-monitor-dev",
+      "service_name": "sar-state-api-svc-test"
+    }
+  },
+  "timestamp": "2026-07-16T09:13:51.215609Z",
+  "severity": "DEBUG",
+  "labels": {
+    "instanceId": "001548f72913665c1a69c0b7130f9e8677ca9d36b57bd305a78a8842c95a739a00e3cb216a3e39e728227757e92ef6e85a2fe27e558f90d16aa7f058e9f49bc5fa4cc0831b90571d1d41ba50274a17a19c961918b18175650dded5"
+  },
+  "logName": "projects/mafat-ai-gee-monitor-dev/logs/run.googleapis.com%2Fstdout",
+  "receiveTimestamp": "2026-07-16T09:13:51.448398184Z"
+}
