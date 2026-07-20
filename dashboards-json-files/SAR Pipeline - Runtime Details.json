@@ -23,6 +23,32 @@
   "links": [],
   "panels": [
     {
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "# Runtime Details",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.0.2",
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
       "datasource": {
         "type": "googlecloud-logging-datasource",
         "uid": "google-cloud-logging"
@@ -123,9 +149,9 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 24,
+        "w": 23,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 3,
       "options": {
@@ -472,9 +498,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 24,
+        "w": 23,
         "x": 0,
-        "y": 10
+        "y": 13
       },
       "id": 4,
       "options": {
@@ -866,7 +892,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "SAR Pipeline - Runtime Details",
+  "title": "Runtime Details",
   "uid": "171733c2-c219-445d-8baa-260e84dec5bf",
-  "version": 4
+  "version": 14
 }
