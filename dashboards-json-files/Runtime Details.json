@@ -173,7 +173,7 @@
         {
           "bucketId": "me-west1/buckets/_Default",
           "projectId": "mafat-ai-gee-monitor-dev",
-          "queryText": "jsonPayload.manifest_type=\"PairManifest\"\n-jsonPayload.manifest_data.end_time=null",
+          "queryText": "jsonPayload.manifest_type=\"PairManifest\"\n-jsonPayload.manifest_data.gee_processing.ended_at=null",
           "refId": "A",
           "viewId": "_Default"
         }
@@ -187,7 +187,6 @@
               "jsonPayload.manifest_data.gee_processing.started_at",
               "jsonPayload.manifest_data.pair_id",
               "jsonPayload.manifest_data.gee_processing.ended_at",
-              "jsonPayload.manifest_data.end_time",
               "jsonPayload.manifest_data.global_status"
             ]
           }
@@ -202,7 +201,7 @@
             "fields": {},
             "sort": [
               {
-                "field": "jsonPayload.manifest_data.end_time"
+                "field": "time"
               }
             ]
           }
@@ -211,10 +210,6 @@
           "id": "convertFieldType",
           "options": {
             "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "jsonPayload.manifest_data.end_time"
-              },
               {
                 "destinationType": "time",
                 "targetField": "jsonPayload.manifest_data.gee_processing.ended_at"
@@ -226,6 +221,10 @@
               {
                 "destinationType": "time",
                 "targetField": "jsonPayload.manifest_data.start_time"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "time"
               }
             ],
             "fields": {}
@@ -264,6 +263,12 @@
                 "operation": "groupby"
               },
               "jsonPayload.manifest_data.start_time": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "time": {
                 "aggregations": [
                   "last"
                 ],
@@ -430,7 +435,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Row Download"
+              "options": "Raw Download"
             },
             "properties": [
               {
@@ -491,6 +496,10 @@
                   "fixedColor": "blue",
                   "mode": "shades"
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 562
               }
             ]
           }
@@ -513,14 +522,15 @@
           ],
           "show": true
         },
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "12.0.2",
       "targets": [
         {
           "bucketId": "me-west1/buckets/_Default",
           "projectId": "mafat-ai-gee-monitor-dev",
-          "queryText": "jsonPayload.manifest_type=\"ProductManifest\"\n-jsonPayload.manifest_data.end_time=null",
+          "queryText": "jsonPayload.manifest_type=\"ProductManifest\"\n-jsonPayload.manifest_data.end_time=null AND\n-jsonPayload.manifest_data.metadata_uint16.started_at=null",
           "refId": "A",
           "viewId": "_Default"
         }
@@ -541,7 +551,8 @@
               "jsonPayload.manifest_data.start_time",
               "jsonPayload.manifest_data.uint16_conversion.ended_at",
               "jsonPayload.manifest_data.uint16_conversion.started_at",
-              "jsonPayload.manifest_data.base_name"
+              "jsonPayload.manifest_data.base_name",
+              "jsonPayload.manifest_data.global_status"
             ]
           }
         },
@@ -754,7 +765,7 @@
         {
           "id": "calculateField",
           "options": {
-            "alias": "Row Download",
+            "alias": "Raw Download",
             "binary": {
               "left": {
                 "matcher": {
@@ -834,9 +845,9 @@
             "reduce": {
               "include": [
                 "Metadata Unit-16",
-                "Row Download",
                 "Snap Process",
-                "Unit-16 Conversion"
+                "Unit-16 Conversion",
+                "Raw Download"
               ],
               "reducer": "sum"
             }
@@ -847,12 +858,13 @@
           "options": {
             "include": {
               "names": [
+                "jsonPayload.manifest_data.base_name",
+                "jsonPayload.manifest_data.global_status (last)",
                 "Metadata Unit-16",
-                "Row Download",
                 "Snap Process",
                 "Unit-16 Conversion",
                 "All-Processes Time",
-                "jsonPayload.manifest_data.base_name"
+                "Raw Download"
               ]
             }
           }
@@ -863,16 +875,18 @@
             "excludeByName": {},
             "includeByName": {},
             "indexByName": {
-              "Conversion Runtime": 4,
-              "Global Product Runtime": 5,
-              "Row Download Runtime": 2,
-              "Snap Process Runtime": 3,
-              "Unit-16 Runtime": 1,
-              "id": 0
+              "All-Processes Time": 5,
+              "Metadata Unit-16": 1,
+              "Raw Download": 4,
+              "Snap Process": 2,
+              "Unit-16 Conversion": 3,
+              "jsonPayload.manifest_data.base_name": 0,
+              "jsonPayload.manifest_data.global_status (last)": 6
             },
             "renameByName": {
               "id": "Product ID",
-              "jsonPayload.manifest_data.base_name": "Product ID"
+              "jsonPayload.manifest_data.base_name": "Product ID",
+              "jsonPayload.manifest_data.global_status (last)": "Global Status"
             }
           }
         }
@@ -894,5 +908,5 @@
   "timezone": "browser",
   "title": "Runtime Details",
   "uid": "171733c2-c219-445d-8baa-260e84dec5bf",
-  "version": 14
+  "version": 19
 }
